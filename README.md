@@ -7,7 +7,7 @@
 
 
 # 🏡 U.S. House Price Growth Analysis (1975–2024)
-This project presents a comprehensive analysis of house price growth trends across U.S. states over 49 years (from Q1 1975 to Q1 2024). Historical housing index data was extracted, cleaned, and analyzed using a PostgreSQL database (House_db) to identify long-term appreciation trends and regional performance patterns. The primary focus is on Montana, which has demonstrated exceptional growth, alongside comparative insights from other high-performing states like Utah, Washington, and Oregon.
+This project presents a comprehensive analysis of house price growth trends across U.S. states over 49 years (from Q1 1975 to Q1 2024). Historical housing index data was extracted, cleaned, and analyzed using a PostgreSQL database (House_db) to identify long-term appreciation trends and regional performance patterns. The primary focus is on Montana, which has demonstrated exceptional growth, alongside comparative insights from other high-performing states like Utah, Washington, and Oregan.
 
 # 🛠️ Tools & Technologies
 Database: PostgreSQL (House_db)
