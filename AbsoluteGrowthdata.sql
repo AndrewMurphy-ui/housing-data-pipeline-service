@@ -65,4 +65,5 @@ UNION ALL
     FROM growth_summary
     ORDER BY total_growth ASC
     LIMIT 5  -- Lowest or negative growth areas by absolute growth
+
 );
