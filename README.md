@@ -114,4 +114,4 @@ This project highlights how combining **SQL querying in PostgreSQL** with **Powe
 
 ---
 
-Would you like me to help write the SQL queries section too, or export this as a downloadable markdown file?
+
