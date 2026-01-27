@@ -1,69 +1,47 @@
--- we are seeing the top 10 and bottom 10 areas overall based on price growth overtime , i want to track each states full timeline 
--- Absolute Growth
-
-
--- lets check 
-
-
-
-
-
-
-
 WITH base_data AS (
-    SELECT 
-        place_name,
-        TO_CHAR(
-            date_trunc('quarter', make_date(CAST(yr AS INTEGER), CAST(period AS INTEGER) * 3, 1)),
-            'YYYY-"Q"Q'
-        ) AS quarter,
-        index_sa
-    FROM hpi_state_analysis hsa 
-    WHERE level = 'State'
-      AND frequency = 'quarterly'
+  SELECT
+    place_name,
+    date_trunc('quarter', make_date(yr::int, (period::int) * 3, 1)) AS quarter_start,
+    index_sa
+  FROM hpi_state_analysis
+  WHERE level = 'State'
+    AND frequency = 'quarterly'
 ),
-ranked_data AS (
-    SELECT 
-        place_name,
-        quarter,
-        index_sa,
-        ROW_NUMBER() OVER (PARTITION BY place_name ORDER BY quarter ASC) AS rn_asc,
-        ROW_NUMBER() OVER (PARTITION BY place_name ORDER BY quarter DESC) AS rn_desc
-    FROM base_data
+first_last AS (
+  SELECT DISTINCT
+    place_name,
+    FIRST_VALUE(index_sa) OVER (PARTITION BY place_name ORDER BY quarter_start)      AS first_index,
+    FIRST_VALUE(quarter_start) OVER (PARTITION BY place_name ORDER BY quarter_start) AS first_quarter,
+    FIRST_VALUE(index_sa) OVER (PARTITION BY place_name ORDER BY quarter_start DESC) AS last_index,
+    FIRST_VALUE(quarter_start) OVER (PARTITION BY place_name ORDER BY quarter_start DESC) AS last_quarter
+  FROM base_data
 ),
-first_last_values AS (
-    SELECT
-        place_name,
-        MAX(CASE WHEN rn_asc = 1 THEN index_sa END) AS first_index,
-        MAX(CASE WHEN rn_desc = 1 THEN index_sa END) AS last_index,
-        MAX(CASE WHEN rn_desc = 1 THEN quarter END) AS last_quarter,
-        MAX(CASE WHEN rn_asc = 1 THEN quarter END) AS first_quarter
-    FROM ranked_data
-    GROUP BY place_name
+growth AS (
+  SELECT
+    place_name,
+    to_char(first_quarter, 'YYYY-"Q"Q') AS first_quarter,
+    to_char(last_quarter,  'YYYY-"Q"Q') AS last_quarter,
+    first_index,
+    last_index,
+    (last_index - first_index) AS total_growth,
+    ROUND(((last_index - first_index) / NULLIF(first_index, 0)) * 100, 2) AS percentage_growth
+  FROM first_last
 ),
-growth_summary AS (
-    SELECT 
-        place_name,
-        first_quarter,
-        last_quarter,
-        first_index,
-        last_index,
-        last_index - first_index AS total_growth,
-        ROUND(((last_index - first_index) / first_index) * 100, 2) AS percentage_growth
-    FROM first_last_values
+ranked AS (
+  SELECT
+    *,
+    DENSE_RANK() OVER (ORDER BY total_growth DESC) AS r_top,
+    DENSE_RANK() OVER (ORDER BY total_growth ASC)  AS r_bottom
+  FROM growth
 )
--- Final Output
-(
-    SELECT *
-    FROM growth_summary
-    ORDER BY total_growth DESC
-    LIMIT 5  -- Top performing areas by absolute growth
-)
-UNION ALL
-(
-    SELECT *
-    FROM growth_summary
-    ORDER BY total_growth ASC
-    LIMIT 5  -- Lowest or negative growth areas by absolute growth
+SELECT *
+FROM ranked
+WHERE r_top <= 5 OR r_bottom <= 5
+ORDER BY
+  CASE
+    WHEN r_top <= 5 THEN 1
+    ELSE 2
+  END,
+  total_growth DESC;
 
-);
+
