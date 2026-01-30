@@ -1,117 +1,108 @@
+# 🏠 Housing Data Pipeline Service (1975–2024)
+
+An automated backend service for ingesting, validating, and serving long-term U.S. housing market data through a stable HTTP API.  
+This project focuses on **data reliability, workflow automation, and production awareness**, rather than one-off analysis or dashboards.
 
 ---
 
-# 🏡 House Sales Analysis (1975–2024)
+## 🚩 Problem Statement
 
-![image](https://github.com/user-attachments/assets/7cdc5fde-a1ab-42c5-8b27-f147985be2b2)
+Housing market data is commonly distributed as static files (CSV/Excel) that must be repeatedly imported, cleaned, and recalculated by each consumer. This leads to:
 
+- duplicated data processing  
+- inconsistent metric definitions  
+- silent data quality issues  
+- difficulty tracking data freshness and failures  
 
-# 🏡 U.S. House Price Growth Analysis (1975–2024)
-This project presents a comprehensive analysis of house price growth trends across U.S. states over 49 years (from Q1 1975 to Q1 2024). Historical housing index data was extracted, cleaned, and analyzed using a PostgreSQL database (House_db) to identify long-term appreciation trends and regional performance patterns. The primary focus is on Montana, which has demonstrated exceptional growth, alongside comparative insights from other high-performing states like Utah, Washington, and Oregan.
+As a result, dashboards, scripts, and analysts often disagree on results and lack visibility into data reliability.
 
-# 🛠️ Tools & Technologies
-Database: PostgreSQL (House_db)
+---
 
-Language: SQL (data extraction & transformation)
+## ✅ Solution
 
-Visualization: Power BI / Matplotlib (optional for visuals)
+This project provides a **centralized backend service** that:
 
-Metrics: Calculated percentage growth, total index growth, and quarterly growth rates
+- ingests housing data through a repeatable pipeline  
+- validates and enforces data quality rules  
+- quarantines invalid data instead of silently failing  
+- records ingestion run history for auditability  
+- triggers alerts on failure or partial success  
+- exposes trusted metrics and time-series data via HTTP APIs  
 
-# 📊 Key Metrics for Montana
-Metric	Value
-Total Index Growth	492.41
-Percentage Growth	260.15%
-Average Quarterly Growth	0.64
+The system is designed to be **operated**, not just run once.
 
-Total Index Growth measures the change in Montana’s housing price index from 1975 to 2024.
+---
 
-Percentage Growth captures the overall proportional increase in house prices over the 49-year span.
+## 🧠 Key Design Concepts
 
-Quarterly Growth reflects the average increase in index points per quarter.
+- **Outcome-based workflows**  
+  Ingestion runs explicitly result in `SUCCESS`, `PARTIAL`, or `FAILURE`, each triggering different actions.
 
-# 📌 Key Insights
-🔝 Top States by Total Growth (1975–2024)
-Based on total index growth, the top four states are:
+- **Single source of truth**  
+  All consumers rely on the same validated data and metric definitions.
 
-Montana
+- **Separation of concerns**  
+  Ingestion, validation, storage, and API access are clearly separated.
 
-Utah
+- **Reproducible environment**  
+  The entire system runs via Docker for consistency across machines.
 
-Washington
+---
 
-Oregon
+## 🏗️ Architecture Overview
 
-Montana ranks #1 in total index growth, highlighting its remarkable long-term appreciation in property values. This trend may reflect a combination of factors including increased migration, changing lifestyle preferences, and economic development in the Mountain West region.
+**Data flow:**
 
-# 🔍 Additional Observations
-Steady Growth Pattern: Montana’s housing market shows consistent quarterly increases with relatively low volatility, indicating stable demand over time.
+1. Raw housing data is ingested into a staging layer  
+2. Validation rules are applied  
+3. Valid rows are promoted to clean storage  
+4. Invalid rows are quarantined with error reasons  
+5. Ingestion results are recorded and alerts generated  
+6. Clients consume data through HTTP APIs  
 
-Post-2000 Acceleration: A significant portion of the growth occurred after the year 2000, suggesting increased regional attractiveness or demographic shifts.
+---
 
-Comparison to National Trends: While the U.S. average also shows steady growth, Montana’s growth rate outpaces national averages and stands out among all 50 states.
+## 🗄️ Database Structure
 
-# 📦 Potential Use Cases
-Real Estate Investment Analysis
+Core tables include:
 
-Policy Research on Housing Affordability
+- `housing_raw` – staging area for incoming data  
+- `housing_clean` – validated, trusted housing data  
+- `quarantine_rows` – rejected rows with validation errors  
+- `ingestion_runs` – audit trail of ingestion outcomes  
+- `alerts` – warnings and failures triggered by workflows  
 
-Regional Economic Trend Studies
+Uniqueness and integrity are enforced at the database level.
 
-Forecasting Models for Housing Markets
-### 📉 Historical Trends
-- The **average seasonally adjusted index (`index_sa`)** illustrates steady house price growth with a sharp increase post-2000.
-- A dip around the early 1990s suggests possible market corrections or economic shifts.
+---
 
-## 🗺️ Visualizations
+## 🔌 API Endpoints
 
-- **Bar Charts** for percentage and total growth
-- **Map** of top-performing states
-- **Quarterly Growth Rankings**
-- **Line Chart** of indexed price trends over time
+### Operational
+- `GET /health` – service health check  
+- `GET /meta/last-run` – most recent ingestion status  
+- `GET /runs` – ingestion run history  
+- `GET /runs/{id}` – detailed run information  
+- `GET /alerts` – recent alerts  
 
-## 🛠️ Tools & Technologies
+### Data Access
+- `GET /states` – available states  
+- `GET /series/{state}` – quarterly time-series data  
+- `GET /metrics/{state}` – computed housing metrics  
+- `GET /rankings?metric=total_growth&top=10` – ranked results  
 
-| Tool         | Purpose                          |
-|--------------|----------------------------------|
-| PostgreSQL   | Data storage and querying (`House_db`) |
-| SQL          | Data transformation and calculation |
-| Power BI     | Data visualization and dashboarding |
-| GitHub       | Version control and collaboration |
+All endpoints return JSON and are documented via OpenAPI.
 
-## 🧾 Data Overview
-- **Database Name:** `House_db`
-- **Frequency:** Quarterly
-- **Index Used:** `index_sa` (Seasonally Adjusted)
-- **Time Period:** 1975 to 2024
-- **Data Source:** [gov.ie housing dataset ](https://www.gov.ie)
+---
 
-## 📁 Project Structure
+## ⚙️ Running the Project
+
+### Prerequisites
+- Docker  
+- Docker Compose  
+
+### Start the system
 ```bash
-├── sql/
-│   └── house_growth_analysis.sql
-├── visuals/
-│   └── dashboard.png
-├── README.md
-```
-
-## 🚀 How to Use
-
-1. **Clone this repository**  
-   `git clone https://github.com/your-username/house-sales-analysis.git`
-
-2. **Import the SQL dataset** into PostgreSQL as `House_db`.
-
-3. **Run analysis queries** from `sql/house_growth_analysis.sql`.
-
-4. **Open the Power BI dashboard** to explore visualizations.
-
-5. **Adjust filters by state, year, or index type** to explore trends.
-
-## 🎯 Key Learning
-
-This project highlights how combining **SQL querying in PostgreSQL** with **Power BI dashboards** enables deep, visually-driven insights into long-term trends in the U.S. housing market.
-
----
+docker compose up --build
 
 
