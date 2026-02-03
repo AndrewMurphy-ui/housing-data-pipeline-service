@@ -9,7 +9,7 @@ This project focuses on **data reliability, workflow automation, and production 
 
 Housing market data is commonly distributed as static files (CSV/Excel) that must be repeatedly imported, cleaned, and recalculated by each consumer. This leads to:
 
-- duplicated data processing  
+- duplicated data processing
 - inconsistent metric definitions  
 - silent data quality issues  
 - difficulty tracking data freshness and failures  
