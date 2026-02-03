@@ -5,7 +5,7 @@ This project focuses on **data reliability, workflow automation, and production 
 
 ---
 
-## 🚩 Problem Statement
+## 🚩 Problem Statements
 
 Housing market data is commonly distributed as static files (CSV/Excel) that must be repeatedly imported, cleaned, and recalculated by each consumer. This leads to:
 
