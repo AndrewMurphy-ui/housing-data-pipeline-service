@@ -12,7 +12,7 @@ Housing market data is commonly distributed as static files (CSV/Excel) that mus
 - duplicated data processing
 - inconsistent metric definitions  
 - silent data quality issues  
-- difficulty tracking data freshness and failures  
+- difficulty tracking data freshness and failures 
 
 As a result, dashboards, scripts, and analysts often disagree on results and lack visibility into data reliability.
 
